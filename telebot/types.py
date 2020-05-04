@@ -100,11 +100,13 @@ class Update(JsonDeserializable):
         shipping_query = ShippingQuery.de_json(obj.get('shipping_query'))
         pre_checkout_query = PreCheckoutQuery.de_json(obj.get('pre_checkout_query'))
         poll = Poll.de_json(obj.get('poll'))
+        poll_answer = PollAnswer.de_json(obj.get('poll_answer'))
+
         return cls(update_id, message, edited_message, channel_post, edited_channel_post, inline_query,
-                   chosen_inline_result, callback_query, shipping_query, pre_checkout_query, poll)
+                   chosen_inline_result, callback_query, shipping_query, pre_checkout_query, poll, poll_answer)
 
     def __init__(self, update_id, message, edited_message, channel_post, edited_channel_post, inline_query,
-                 chosen_inline_result, callback_query, shipping_query, pre_checkout_query, poll):
+                 chosen_inline_result, callback_query, shipping_query, pre_checkout_query, poll, poll_answer):
         self.update_id = update_id
         self.message = message
         self.edited_message = edited_message
@@ -116,6 +118,7 @@ class Update(JsonDeserializable):
         self.shipping_query = shipping_query
         self.pre_checkout_query = pre_checkout_query
         self.poll = poll
+        self.poll_answer = poll_answer
 
 
 class WebhookInfo(JsonDeserializable):
@@ -2229,6 +2232,22 @@ class PollOption(JsonSerializable, JsonDeserializable):
     def to_json(self):
         # send_poll Option is a simple string: https://core.telegram.org/bots/api#sendpoll
         return json.dumps(self.text)
+
+
+class PollAnswer(JsonDeserializable):
+    @classmethod
+    def de_json(cls, json_string):
+        if (json_string is None): return None
+        obj = cls.check_json(json_string)
+        poll_id = obj['poll_id']
+        user = User.de_json(obj['user'])
+        option_ids = obj['option_ids']
+        return cls(poll_id, user, option_ids)
+
+    def __init__(self, poll_id, user, option_ids):
+        self.poll_id = poll_id
+        self.user = user
+        self.option_ids = option_ids
 
 
 class Poll(JsonDeserializable):
